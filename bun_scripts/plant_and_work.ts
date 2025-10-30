@@ -12,6 +12,7 @@ let booting = false
 let planted = false
 let worked = false
 let errors = 0
+let plantedAt: number | undefined // Track when we planted to ensure gap >= 1
 
 // TODO We have timestamps, we don't need to look every 5 seconds we can wait till the next block
 
@@ -72,6 +73,7 @@ async function run() {
         worked = !!pail?.gap || !!pail?.zeros
         harvested = false
         errors = 0
+        plantedAt = undefined // Reset plant timestamp on new block
     }
 
     else if (!harvested && timeDiff >= 60000) {
@@ -95,7 +97,7 @@ async function run() {
     if (!booting && !proc && (!planted || !worked)) {
         try {
             booting = true;
-            await bootProc(index, entropy, timeDiff)
+            await bootProc(index, entropy)
         } catch (err) {
             console.error('Boot Error:', err);
             errors++
@@ -105,7 +107,7 @@ async function run() {
     }
 }
 
-async function bootProc(index: number, entropy: string, timeDiff: number) {
+async function bootProc(index: number, entropy: string) {
     if (!planted) {
         await plant()
     }
@@ -155,6 +157,19 @@ async function readStream(reader: ReadableStream<Uint8Array<ArrayBufferLike>>) {
             }
         }
 
+        // Ensure at least 10 seconds (2+ ledgers) have passed since planting
+        // to avoid Error(Contract, #15) GapCountTooLow
+        if (plantedAt) {
+            const timeSincePlant = Date.now() - plantedAt;
+            const minDelay = 10000; // 10 seconds minimum (Stellar ledgers ~5s each)
+
+            if (timeSincePlant < minDelay) {
+                const waitTime = minDelay - timeSincePlant;
+                console.log(`Waiting ${Math.ceil(waitTime / 1000)}s before submitting work to ensure gap >= 1...`);
+                await Bun.sleep(waitTime);
+            }
+        }
+
         const at = await contract.work({
             farmer: Bun.env.FARMER_PK,
             hash: Buffer.from(hash, 'hex'),
@@ -164,6 +179,10 @@ async function readStream(reader: ReadableStream<Uint8Array<ArrayBufferLike>>) {
         if (Api.isSimulationError(at.simulation!)) {
             if (at.simulation.error.includes('Error(Contract, #7)')) {
                 console.log('Already worked');
+            } else if (at.simulation.error.includes('Error(Contract, #15)')) {
+                console.error('Work Error: GapCountTooLow - planted and worked in same ledger. Increase delay.');
+                errors++
+                return;
             } else {
                 console.error('Work Error:', at.simulation.error);
                 errors++
@@ -203,6 +222,7 @@ async function plant() {
         await send(at)
 
         console.log('Successfully planted', Bun.env.STAKE_AMOUNT / 1e7);
+        plantedAt = Date.now(); // Record plant time for gap calculation
     }
 
     planted = true;
