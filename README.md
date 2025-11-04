@@ -168,7 +168,7 @@ bun install  # Installs PM2 as dev dependency
 ```bash
 cd bun_scripts
 bun run pm2:start
-# or with npx: npx pm2 start ../ecosystem.config.js --only kale-farmer
+# or with npx: npx pm2 start ../ecosystem.config.cjs --only kale-farmer
 ```
 
 **Testnet:**

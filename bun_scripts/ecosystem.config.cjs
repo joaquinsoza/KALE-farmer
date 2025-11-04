@@ -3,7 +3,7 @@ module.exports = {
     {
       name: 'kale-farmer',
       script: 'bun',
-      args: 'run plant_and_work.ts',
+      args: 'run farm',
       cwd: './bun_scripts',
       interpreter: 'none',
       instances: 1,
