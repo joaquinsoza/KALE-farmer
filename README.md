@@ -134,12 +134,106 @@ bun run farm:futurenet
 
 ## Running the Farmer
 
-### Start Farming
+### Option 1: Direct Execution (Foreground)
+
+Run the farmer directly in your terminal:
 
 ```bash
 cd bun_scripts
 bun run farm
 ```
+
+This runs in the foreground and will stop if you close the terminal or the process crashes.
+
+### Option 2: PM2 Process Manager (Recommended for 24/7 Operation)
+
+For production use, PM2 will automatically restart the farmer if it crashes and keep it running in the background:
+
+#### First Time Setup
+
+Install PM2 globally (one-time):
+```bash
+npm install -g pm2
+```
+
+Or use the local PM2 from the project (no global install needed):
+```bash
+cd bun_scripts
+bun install  # Installs PM2 as dev dependency
+```
+
+#### Starting the Farmer with PM2
+
+**Mainnet:**
+```bash
+cd bun_scripts
+bun run pm2:start
+# or with npx: npx pm2 start ../ecosystem.config.js --only kale-farmer
+```
+
+**Testnet:**
+```bash
+bun run pm2:start:testnet
+```
+
+**Futurenet:**
+```bash
+bun run pm2:start:futurenet
+```
+
+#### Managing PM2 Processes
+
+**Check status:**
+```bash
+bun run pm2:status
+# Shows: PID, status, CPU, memory, uptime, restarts
+```
+
+**View logs (live tail):**
+```bash
+bun run pm2:logs
+# Press Ctrl+C to exit log view
+```
+
+**Monitor resource usage:**
+```bash
+bun run pm2:monit
+# Real-time CPU and memory monitoring
+```
+
+**Restart the farmer:**
+```bash
+bun run pm2:restart
+```
+
+**Stop the farmer:**
+```bash
+bun run pm2:stop
+```
+
+**Remove from PM2:**
+```bash
+bun run pm2:delete
+```
+
+#### PM2 Features
+
+- **Auto-restart on crash**: If the process exits unexpectedly, PM2 automatically restarts it
+- **Memory limits**: Restarts if memory exceeds 500MB (prevents runaway processes)
+- **Exponential backoff**: Prevents rapid restart loops on persistent errors
+- **Log management**: Stores logs in `bun_scripts/logs/` directory
+- **Startup on boot**: Configure PM2 to start farming on system restart:
+  ```bash
+  pm2 startup
+  pm2 save
+  ```
+
+#### PM2 Log Files
+
+Logs are stored in `bun_scripts/logs/`:
+- `kale-farmer-out.log` - Standard output (farming activity)
+- `kale-farmer-error.log` - Error output
+- Similar files for testnet and futurenet variants
 
 ### Expected Output
 
