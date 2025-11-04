@@ -36,6 +36,7 @@ export const contract = new Client({
     networkPassphrase: Bun.env.NETWORK_PASSPHRASE,
 })
 
+// TODO: Might be good to send a transaction through RPC when launchtube fails?
 export async function send<T>(txn: AssembledTransaction<T> | Tx | string, fee?: number) {
     const data = new FormData();
 
