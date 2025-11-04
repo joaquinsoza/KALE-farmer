@@ -10,19 +10,18 @@
     "farm:scheduled": "bun run farm_scheduled.ts",
     "harvest": "bun run harvest.ts",
     "harvest:testnet": "bun run --env-file=.env.testnet harvest.ts",
-    "pm2:start": "pm2 start ecosystem.config.cjs --only kale-farmer",
-    "pm2:start:testnet": "pm2 start ecosystem.config.cjs --only kale-farmer-testnet",
-    "pm2:start:futurenet": "pm2 start ecosystem.config.cjs --only kale-farmer-futurenet",
-    "pm2:stop": "pm2 stop ecosystem.config.cjs",
-    "pm2:restart": "pm2 restart ecosystem.config.cjs",
-    "pm2:delete": "pm2 delete ecosystem.config.cjs",
+    "pm2:start": "pm2 start pm2/ecosystem.config.cjs --only kale-farmer",
+    "pm2:start:testnet": "pm2 start pm2/ecosystem.config.cjs --only kale-farmer-testnet",
+    "pm2:start:futurenet": "pm2 start pm2/ecosystem.config.cjs --only kale-farmer-futurenet",
+    "pm2:stop": "pm2 stop pm2/ecosystem.config.cjs",
+    "pm2:restart": "pm2 restart pm2/ecosystem.config.cjs",
+    "pm2:delete": "pm2 delete pm2/ecosystem.config.cjs",
     "pm2:logs": "pm2 logs",
     "pm2:status": "pm2 status",
     "pm2:monit": "pm2 monit"
   },
   "devDependencies": {
-    "@types/bun": "latest",
-    "pm2": "^5.4.3"
+    "@types/bun": "latest"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
