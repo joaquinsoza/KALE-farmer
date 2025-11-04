@@ -159,15 +159,18 @@ async function readStream(reader: ReadableStream<Uint8Array<ArrayBufferLike>>) {
 
         // Ensure at least 10 seconds (2+ ledgers) have passed since planting
         // to avoid Error(Contract, #15) GapCountTooLow
+        const minDelay = 10000; // 10 seconds minimum (Stellar ledgers ~5s each)
         if (plantedAt) {
             const timeSincePlant = Date.now() - plantedAt;
-            const minDelay = 10000; // 10 seconds minimum (Stellar ledgers ~5s each)
 
             if (timeSincePlant < minDelay) {
                 const waitTime = minDelay - timeSincePlant;
                 console.log(`Waiting ${Math.ceil(waitTime / 1000)}s before submitting work to ensure gap >= 1...`);
                 await Bun.sleep(waitTime);
             }
+        } else {
+            console.warn(`plantedAt is undefined; enforcing conservative delay of ${minDelay / 1000}s before submitting work to ensure gap requirement.`);
+            await Bun.sleep(minDelay);
         }
 
         const at = await contract.work({
@@ -222,8 +225,8 @@ async function plant() {
         await send(at)
 
         console.log('Successfully planted', Bun.env.STAKE_AMOUNT / 1e7);
-        plantedAt = Date.now(); // Record plant time for gap calculation
     }
 
     planted = true;
+    plantedAt = Date.now(); // Record plant time for gap calculation
 }
